@@ -9,5 +9,32 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+}
+
+model Event {
+  id           String        @id @default(cuid())
+  eventId      String        @unique
+  type         String
+  businessId   String
+  status       String        @default("received")
+  rawPayload   Json
+  error        String?
+  receivedAt   DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  workflowRuns WorkflowRun[]
+}
+
+model WorkflowRun {
+  id            String    @id @default(cuid())
+  eventDbId     String
+  step          String
+  status        String
+  inputPayload  Json
+  outputPayload Json?
+  error         String?
+  startedAt     DateTime  @default(now())
+  finishedAt    DateTime?
+
+  event Event @relation(fields: [eventDbId], references: [id], onDelete: Cascade)
 }
